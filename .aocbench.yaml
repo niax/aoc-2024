@@ -1,0 +1,39 @@
+---
+# .aocbench.yaml version (always 1)
+version: 1
+# Repo Author
+author: niax
+# Language used
+language: golang
+# Path to Dockerfile to build image
+dockerfile: .docker/Dockerfile
+# Or image (this takes priority)
+# image: php:8.3-cli
+# Disable Hyperfine usage
+# hyperfine: False
+# Location where code directory should be mounted
+code: /code
+# [*] What directory to run code from
+workdir: /code
+# [*] When running image, command to run a given day.
+cmd: "./bin/day%zeroday% %input%"
+# [*] When running image, command to run once to build a given day if needed.
+runonce: "./build.sh %zeroday%"
+# [*] Directories that need persisting across runs
+persistence: []
+# [*] Environment vars to set on container
+environment:
+- GOGC=off
+# [*] Path to per-day code.
+daypath: "cmd/day%zeroday%/day%zeroday%.go"
+# [*] Path to per-day input file.
+inputfile: "inputs/%zeroday%"
+# [*] Path to per-day answer file.
+answerfile: "answers/%zeroday%"
+# [*] Paths that changes cause an update for
+common:
+- src/commons/
+- src/lib.rs
+- Cargo.toml
+- Cargo.lock
+- .cargo/config.toml
