@@ -60,7 +60,6 @@ func main() {
 		grid = append(grid, row)
 	}
 
-
 	safe := 0
 	p2safe := 0
 	for _, row := range grid {
@@ -68,14 +67,15 @@ func main() {
 			safe += 1
 			p2safe += 1
 		} else {
+			newRow := make([]int, 0, len(row)-1)
 			for i := range row {
-				newRow := make([]int, 0, len(row) - 1)
 				newRow = append(newRow, row[:i]...)
 				newRow = append(newRow, row[i+1:]...)
 				if isRowSafe(newRow) {
 					p2safe += 1
 					break
 				}
+				newRow = newRow[:0]
 			}
 		}
 

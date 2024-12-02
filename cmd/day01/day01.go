@@ -34,7 +34,7 @@ func main() {
 		return right[i] < right[j]
 	})
 
-	diffSum := 0 
+	diffSum := 0
 	for i := range left {
 		diff := max(left[i], right[i]) - min(left[i], right[i])
 		diffSum += diff

@@ -32,8 +32,5 @@ inputfile: "inputs/%zeroday%"
 answerfile: "answers/%zeroday%"
 # [*] Paths that changes cause an update for
 common:
-- src/commons/
-- src/lib.rs
-- Cargo.toml
-- Cargo.lock
-- .cargo/config.toml
+- build.sh
+- internal/
