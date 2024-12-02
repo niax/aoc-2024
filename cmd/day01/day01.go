@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	inputFd, err := os.Open("day01.txt")
+	inputFd, err := os.Open("inputs/01")
 	if err != nil {
 		panic(err)
 	}
@@ -39,7 +39,6 @@ func main() {
 		diff := max(left[i], right[i]) - min(left[i], right[i])
 		diffSum += diff
 	}
-	fmt.Printf("%d\n", diffSum)
 
 	similarityScore := 0
 	lIdx := 0
@@ -58,5 +57,5 @@ func main() {
 		lIdx++
 	}
 
-	fmt.Printf("%d\n", similarityScore)
+	fmt.Printf("%d\n%d\n", diffSum, similarityScore)
 }
