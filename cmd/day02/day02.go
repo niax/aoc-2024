@@ -16,6 +16,9 @@ func abs(v int) int {
 }
 
 func isRowSafe(row []int) bool {
+	if len(row) < 2 {
+		return true
+	}
 	increasing := row[0] < row[1]
 	for i := range row {
 		if i == 0 {
@@ -38,6 +41,31 @@ func isRowSafe(row []int) bool {
 
 	return true
 
+}
+
+func part2(current, remaining []int, removed bool) bool {
+	if len(remaining) == 0 {
+		return true
+	}
+
+	next := make([]int, 0, len(current)+1)
+	next = append(next, current...)
+	next = append(next, remaining[0])
+	remaining = remaining[1:]
+
+	if isRowSafe(next) {
+		if removed {
+			return part2(next, remaining, true)
+		} else {
+			return part2(next, remaining, false) || part2(current, remaining, true)
+		}
+	} else {
+		if removed {
+			return false
+		} else {
+			return part2(current, remaining, true)
+		}
+	}
 }
 
 func main() {
@@ -67,15 +95,8 @@ func main() {
 			safe += 1
 			p2safe += 1
 		} else {
-			newRow := make([]int, 0, len(row)-1)
-			for i := range row {
-				newRow = append(newRow, row[:i]...)
-				newRow = append(newRow, row[i+1:]...)
-				if isRowSafe(newRow) {
-					p2safe += 1
-					break
-				}
-				newRow = newRow[:0]
+			if part2([]int{}, row, false) {
+				p2safe += 1
 			}
 		}
 
