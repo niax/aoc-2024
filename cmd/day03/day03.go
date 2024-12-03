@@ -15,7 +15,7 @@ func main() {
 	}
 	defer inputFd.Close()
 
-	re, _ := regexp.Compile("(mul\\((\\d+),(\\d+)\\)|do\\(\\)|don't\\(\\))")
+	re := regexp.MustCompile("(mul\\((\\d+),(\\d+)\\)|do\\(\\)|don't\\(\\))")
 	re.Match([]byte("x"))
 
 	p1 := 0
@@ -24,9 +24,9 @@ func main() {
 	enable := true
 	for input.Scan() {
 		line := input.Text()
-		res := re.FindAllString(line, -1)
-		for i := range res {
-			submatch := re.FindStringSubmatch(res[i])
+		submatches := re.FindAllStringSubmatch(line, -1)
+		for i := range submatches {
+			submatch := submatches[i]
 			if submatch[0] == "do()" {
 				enable = true
 			} else if submatch[0] == "don't()" {
