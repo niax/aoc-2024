@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"unicode"
 )
 
 type commandType int
+
 const (
 	commandTypeUnknown commandType = iota
 	commandTypeMul
@@ -17,26 +19,17 @@ const (
 )
 
 type command struct {
-	cmd commandType
+	cmd    commandType
 	param1 int
 	param2 int
 }
 
 type parseState int
+
 const (
 	parseStateInitial parseState = iota
-	parseStateSeenM 
-	parseStateSeenMU
-	parseStateSeenMUL
 	parseStateSeenMUL_PAREN
 	parseStateSeenMUL_COMMA
-	parseStateSeenD
-	parseStateSeenDO
-	parseStateSeenDO_PAREN
-	parseStateSeenDON
-	parseStateSeenDONX
-	parseStateSeenDONXT
-	parseStateSeenDONXT_PAREN
 )
 
 func parse(s string) []command {
@@ -44,35 +37,27 @@ func parse(s string) []command {
 	state := parseStateInitial
 	accum1 := make([]rune, 0, len(s))
 	accum2 := make([]rune, 0, len(s))
-	for _, c := range s {
+	i := 0
+	for i < len(s) {
+		c := rune(s[i])
 		switch state {
 		case parseStateInitial:
-			switch c {
-			case 'm':
-				state = parseStateSeenM
-			case 'd':
-				state = parseStateSeenD
-			}
-		case parseStateSeenM:
-			switch c {
-			case 'u':
-				state = parseStateSeenMU
-			default:
-				state = parseStateInitial
-			}
-		case parseStateSeenMU:
-			switch c {
-			case 'l':
-				state = parseStateSeenMUL
-			default:
-				state = parseStateInitial
-			}
-		case parseStateSeenMUL:
-			switch c {
-			case '(':
+			x := s[i:]
+			if strings.HasPrefix(x, "mul(") {
 				state = parseStateSeenMUL_PAREN
-			default:
-				state = parseStateInitial
+				i += 4
+			} else if strings.HasPrefix(x, "do()") {
+				commands = append(commands, command{
+					cmd: commandTypeDo,
+				})
+				i += 4
+			} else if strings.HasPrefix(x, "don't()") {
+				commands = append(commands, command{
+					cmd: commandTypeDont,
+				})
+				i += 7
+			} else {
+				i += 1
 			}
 		case parseStateSeenMUL_PAREN:
 			if unicode.IsDigit(c) {
@@ -84,6 +69,7 @@ func parse(s string) []command {
 				accum2 = accum2[:0]
 				state = parseStateInitial
 			}
+			i += 1
 		case parseStateSeenMUL_COMMA:
 			if unicode.IsDigit(c) {
 				accum2 = append(accum2, c)
@@ -91,7 +77,7 @@ func parse(s string) []command {
 				p1, _ := strconv.Atoi(string(accum1))
 				p2, _ := strconv.Atoi(string(accum2))
 				commands = append(commands, command{
-					cmd: commandTypeMul,
+					cmd:    commandTypeMul,
 					param1: p1,
 					param2: p2,
 				})
@@ -103,57 +89,7 @@ func parse(s string) []command {
 				accum2 = accum2[:0]
 				state = parseStateInitial
 			}
-		case parseStateSeenD:
-			switch c {
-			case 'o':
-				state = parseStateSeenDO
-			default:
-				state = parseStateInitial
-			}
-		case parseStateSeenDO:
-			switch c {
-			case '(':
-				state = parseStateSeenDO_PAREN
-			case 'n':
-				state = parseStateSeenDON
-			default:
-				state = parseStateInitial
-			}
-		case parseStateSeenDO_PAREN:
-			if c == ')' {
-				commands = append(commands, command{
-					cmd: commandTypeDo,
-				})
-			}
-			state = parseStateInitial
-		case parseStateSeenDON:
-			switch c {
-			case '\'':
-				state = parseStateSeenDONX
-			default:
-				state = parseStateInitial
-			}
-		case parseStateSeenDONX:
-			switch c {
-			case 't':
-				state = parseStateSeenDONXT
-			default:
-				state = parseStateInitial
-			}
-		case parseStateSeenDONXT:
-			switch c {
-			case '(':
-				state = parseStateSeenDONXT_PAREN
-			default:
-				state = parseStateInitial
-			}
-		case parseStateSeenDONXT_PAREN:
-			if c == ')' {
-				commands = append(commands, command{
-					cmd: commandTypeDont,
-				})
-			}
-			state = parseStateInitial
+			i += 1
 		default:
 			panic("unknown parse state")
 		}
