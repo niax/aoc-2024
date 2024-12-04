@@ -1,4 +1,4 @@
-FROM golang:1.22
+FROM golang:1.23
 
 RUN apt update && apt install -y jq hyperfine \
  && go install github.com/klauspost/cpuid/v2/cmd/cpuid@latest
