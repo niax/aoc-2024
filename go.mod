@@ -1,3 +1,3 @@
-module github.co.uk/niax/aoc-2024
+module github.com/niax/aoc-2024
 
 go 1.23.0

@@ -7,22 +7,9 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/niax/aoc-2024/internal/collections"
 )
-
-type Set[T comparable] map[T]struct{}
-
-func NewSet[T comparable]() Set[T] {
-	return make(Set[T])
-}
-
-func (s Set[T]) Add(v T) {
-	s[v] = struct{}{}
-}
-
-func (s Set[T]) Contains(v T) bool {
-	_, contains := s[v]
-	return contains
-}
 
 func main() {
 	inputFd, err := os.Open("inputs/05")
@@ -32,7 +19,7 @@ func main() {
 	defer inputFd.Close()
 
 	input := bufio.NewScanner(inputFd)
-	rules := make(map[int]Set[int], 1024)
+	rules := make(map[int]collections.Set[int], 1024)
 	for input.Scan() {
 		line := input.Text()
 		if line == "" {
@@ -43,7 +30,7 @@ func main() {
 		b, _ := strconv.Atoi(s[1])
 		_, ok := rules[a]
 		if !ok {
-			rules[a] = NewSet[int]()
+			rules[a] = collections.NewSet[int]()
 		}
 		rules[a].Add(b)
 	}
