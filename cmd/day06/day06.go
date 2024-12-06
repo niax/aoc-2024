@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/bits-and-blooms/bitset"
 	"github.com/niax/aoc-2024/internal/collections"
 	"os"
 )
@@ -52,7 +53,7 @@ func canEscape(grid *SliceGrid[bool], posX, posY int) *collections.Set[int] {
 	dy := -1
 	dx := 0
 	visited := collections.NewSetWithCapacity[int](1024)
-	visitedDir := collections.NewSetWithCapacity[int](1024)
+	visitedDir := bitset.New(1024)
 	for posX >= 0 && posX < grid.Width() && posY >= 0 && posY < grid.Height() {
 		visited.Add((posX << 16) | posY)
 		dirEnc := 0
@@ -67,11 +68,11 @@ func canEscape(grid *SliceGrid[bool], posX, posY int) *collections.Set[int] {
 		} else {
 			panic("NOO!")
 		}
-		visitedDirEnc := (dirEnc << 32) | (posX << 16) | posY
-		if visitedDir.Contains(visitedDirEnc) {
+		visitedDirEnc := uint((dirEnc << 16) | (posX << 8) | posY)
+		if visitedDir.Test(visitedDirEnc) {
 			return nil
 		}
-		visitedDir.Add(visitedDirEnc)
+		visitedDir.Set(visitedDirEnc)
 
 		nextX := posX + dx
 		nextY := posY + dy
