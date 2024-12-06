@@ -3,9 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"maps"
+	"os"
+
 	"github.com/bits-and-blooms/bitset"
 	"github.com/niax/aoc-2024/internal/collections"
-	"os"
 )
 
 type SliceGrid[T any] struct {
@@ -49,58 +51,92 @@ func (g *SliceGrid[T]) At(x, y int) *T {
 	return &g.data[g.coordIdx(x, y)]
 }
 
-func canEscape(grid *SliceGrid[bool], posX, posY int) *collections.Set[int] {
-	dy := -1
-	dx := 0
-	visited := collections.NewSetWithCapacity[int](1024)
-	visitedDir := bitset.New(1024)
-	for posX >= 0 && posX < grid.Width() && posY >= 0 && posY < grid.Height() {
-		visited.Add((posX << 16) | posY)
-		dirEnc := 0
-		if dx == 0 && dy == -1 {
-			dirEnc = 1
-		} else if dx == 1 && dy == 0 {
-			dirEnc = 2
-		} else if dx == 0 && dy == 1 {
-			dirEnc = 3
-		} else if dx == -1 && dy == 0 {
-			dirEnc = 4
-		} else {
-			panic("NOO!")
+type direction int
+
+const (
+	directionNorth direction = iota
+	directionEast
+	directionSouth
+	directionWest
+)
+
+func (d direction) TurnRight() direction {
+	n := d + 1
+	if n > directionWest {
+		n = directionNorth
+	}
+	return n
+}
+
+func (d direction) Delta() (int, int) {
+	switch d {
+	case directionNorth:
+		return 0, -1
+	case directionEast:
+		return 1, 0
+	case directionSouth:
+		return 0, 1
+	case directionWest:
+		return -1, 0
+	default:
+		panic("NO!")
+	}
+}
+
+type solver struct {
+	grid        *SliceGrid[bool]
+	guardStartX int
+	guardStartY int
+
+	visited    collections.Set[int]
+	visitedDir bitset.BitSet
+}
+
+func NewSolver(grid *SliceGrid[bool], guardStartX int, guardStartY int) *solver {
+	visited := collections.NewSetWithCapacity[int](1024 * 10)
+	visitedDir := bitset.New(64 * 1024)
+	return &solver{
+		grid:        grid,
+		guardStartX: guardStartX,
+		guardStartY: guardStartY,
+
+		visited:    visited,
+		visitedDir: *visitedDir,
+	}
+}
+
+func (s *solver) canEscape() bool {
+	shouldUpdateVisisted := len(s.visited) == 0
+	s.visitedDir.ClearAll()
+
+	posX := s.guardStartX
+	posY := s.guardStartY
+	dir := directionNorth
+	dx, dy := dir.Delta()
+	for posX >= 0 && posX < s.grid.width && posY >= 0 && posY < s.grid.height {
+		if shouldUpdateVisisted {
+			s.visited.Add((posX << 16) + posY)
 		}
-		visitedDirEnc := uint((dirEnc << 16) | (posX << 8) | posY)
-		if visitedDir.Test(visitedDirEnc) {
-			return nil
+		visitedDirEnc := uint((int(dir) << 16) | (posX << 8) | posY)
+		if s.visitedDir.Test(visitedDirEnc) {
+			return false
 		}
-		visitedDir.Set(visitedDirEnc)
+		s.visitedDir.Set(visitedDirEnc)
 
 		nextX := posX + dx
 		nextY := posY + dy
-		nextSpot := grid.At(nextX, nextY)
+		nextSpot := s.grid.At(nextX, nextY)
 		if nextSpot != nil && *nextSpot {
 			// Rotate
-			if dx == 0 && dy == -1 {
-				dx = 1
-				dy = 0
-			} else if dx == 1 && dy == 0 {
-				dx = 0
-				dy = 1
-			} else if dx == 0 && dy == 1 {
-				dx = -1
-				dy = 0
-			} else if dx == -1 && dy == 0 {
-				dx = 0
-				dy = -1
-			} else {
-				panic("NOO!")
-			}
+			dir = dir.TurnRight()
+			dx, dy = dir.Delta()
 		} else {
 			posX = nextX
 			posY = nextY
 		}
 	}
 
-	return &visited
+	return true
 }
 
 func main() {
@@ -129,18 +165,21 @@ func main() {
 		y++
 	}
 
-	pathPlaces := *canEscape(grid, posX, posY)
-	p1 := len(pathPlaces)
+	slvr := NewSolver(grid, posX, posY)
+	slvr.canEscape()
+	p1 := len(slvr.visited)
+	pathPlaces := maps.Clone(slvr.visited)
+
 	p2 := 0
 
 	for encoded := range pathPlaces {
 		x := encoded >> 16
 		y := encoded & 0xffff
-		grid.Set(x, y, true)
-		if canEscape(grid, posX, posY) == nil {
+		slvr.grid.Set(x, y, true)
+		if !slvr.canEscape() {
 			p2++
 		}
-		grid.Set(x, y, false)
+		slvr.grid.Set(x, y, false)
 	}
 
 	fmt.Printf("%d\n%d\n", p1, p2)
