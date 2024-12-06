@@ -6,7 +6,6 @@ import (
 	"maps"
 	"os"
 
-	"github.com/bits-and-blooms/bitset"
 	"github.com/niax/aoc-2024/internal/collections"
 )
 
@@ -88,40 +87,35 @@ type solver struct {
 	guardStartX int
 	guardStartY int
 
-	visited    collections.Set[int]
-	visitedDir bitset.BitSet
+	visited collections.Set[int]
 }
 
 func NewSolver(grid *SliceGrid[bool], guardStartX int, guardStartY int) *solver {
 	visited := collections.NewSetWithCapacity[int](1024 * 10)
-	visitedDir := bitset.New(64 * 1024)
 	return &solver{
 		grid:        grid,
 		guardStartX: guardStartX,
 		guardStartY: guardStartY,
 
-		visited:    visited,
-		visitedDir: *visitedDir,
+		visited: visited,
 	}
 }
 
 func (s *solver) canEscape() bool {
 	shouldUpdateVisisted := len(s.visited) == 0
-	s.visitedDir.ClearAll()
 
 	posX := s.guardStartX
 	posY := s.guardStartY
 	dir := directionNorth
 	dx, dy := dir.Delta()
+	cnt := 0
 	for posX >= 0 && posX < s.grid.width && posY >= 0 && posY < s.grid.height {
+		if cnt > 10000 {
+			return false
+		}
 		if shouldUpdateVisisted {
 			s.visited.Add((posX << 16) + posY)
 		}
-		visitedDirEnc := uint((int(dir) << 16) | (posX << 8) | posY)
-		if s.visitedDir.Test(visitedDirEnc) {
-			return false
-		}
-		s.visitedDir.Set(visitedDirEnc)
 
 		nextX := posX + dx
 		nextY := posY + dy
@@ -133,6 +127,7 @@ func (s *solver) canEscape() bool {
 		} else {
 			posX = nextX
 			posY = nextY
+			cnt++
 		}
 	}
 
@@ -140,6 +135,7 @@ func (s *solver) canEscape() bool {
 }
 
 func main() {
+
 	inputFd, err := os.Open("inputs/06")
 	if err != nil {
 		panic(err)
