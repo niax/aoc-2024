@@ -51,8 +51,8 @@ func (g *SliceGrid[T]) At(x, y int) *T {
 func canEscape(grid *SliceGrid[bool], posX, posY int) *collections.Set[int] {
 	dy := -1
 	dx := 0
-	visited := collections.NewSet[int]()
-	visitedDir := collections.NewSet[int]()
+	visited := collections.NewSetWithCapacity[int](1024)
+	visitedDir := collections.NewSetWithCapacity[int](1024)
 	for posX >= 0 && posX < grid.Width() && posY >= 0 && posY < grid.Height() {
 		visited.Add((posX << 16) | posY)
 		dirEnc := 0
@@ -110,7 +110,6 @@ func main() {
 	defer inputFd.Close()
 
 	grid := NewSliceGrid[bool](130, 130)
-	//grid := NewSliceGrid[bool](10, 10)
 	input := bufio.NewScanner(inputFd)
 	posX := 0
 	posY := 0
