@@ -8,42 +8,65 @@ import (
 	"strings"
 )
 
-func concat(orig int, toAdd int) int {
-	if orig == 0 {
-		return 0
+func digitMask(i int) int {
+	if i >= 1000000 {
+		panic(i)
+	} else if i >= 100000 {
+		return 1000000
+	} else if i >= 10000 {
+		return 100000
+	} else if i >= 1000 {
+		return 10000
+	} else if i >= 100 {
+		return 1000
+	} else if i >= 10 {
+		return 100
+	} else {
+		return 10
 	}
-	digits := toAdd
-	for digits != 0 {
-		orig *= 10
-		digits /= 10
-	}
-	return orig + toAdd
 }
 
-func solve(target int, current int, values []int) bool {
-	if current > target {
-		return false
+func backSolve(target int, values []int) bool {
+	if target == 0 && len(values) == 0 {
+		return true
 	} else if len(values) == 0 {
-		return target == current
+		return false
 	}
 
-	mul := current * values[0]
-	add := current + values[0]
-	return solve(target, mul, values[1:]) || solve(target, add, values[1:])
+	lastVal := values[len(values)-1]
+	remaining := values[:len(values)-1]
+
+	if target%lastVal == 0 {
+		if backSolve(target/lastVal, remaining) {
+			return true
+		}
+	}
+
+	return backSolve(target-lastVal, remaining)
 }
 
-func solve2(target int, current int, values []int) bool {
-	if current > target {
-		return false
+func backSolve2(target int, values []int) bool {
+	if target == 0 && len(values) == 0 {
+		return true
 	} else if len(values) == 0 {
-		return target == current
+		return false
 	}
 
-	mul := current * values[0]
-	add := current + values[0]
-	cat := concat(current, values[0])
+	lastVal := values[len(values)-1]
+	remaining := values[:len(values)-1]
+	if target%lastVal == 0 {
+		if backSolve2(target/lastVal, remaining) {
+			return true
+		}
+	}
+	mask := digitMask(lastVal)
+	if target%mask == lastVal {
+		if backSolve2(target/mask, remaining) {
+			return true
+		}
+	}
 
-	return solve2(target, mul, values[1:]) || solve2(target, add, values[1:]) || solve2(target, cat, values[1:])
+	return backSolve2(target-lastVal, remaining)
 }
 
 func main() {
@@ -65,10 +88,10 @@ func main() {
 		for i := range valueStrs {
 			values[i], _ = strconv.Atoi(valueStrs[i])
 		}
-		if solve(target, 0, values) {
+		if backSolve(target, values) {
 			p1 += target
 			p2 += target
-		} else if solve2(target, 0, values) {
+		} else if backSolve2(target, values) {
 			p2 += target
 		}
 	}
