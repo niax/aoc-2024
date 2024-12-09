@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"runtime/pprof"
 	"slices"
 	"strconv"
 )
@@ -36,17 +35,23 @@ type filesystem struct {
 }
 
 func (fs *filesystem) InsertFreespace(newFreeSpace freeSpace) {
-	for i := range fs.FreeSpace {
-		if fs.FreeSpace[i].BlockId > newFreeSpace.BlockId {
-			if newFreeSpace.Merge(fs.FreeSpace[i]) {
-				fs.FreeSpace[i] = newFreeSpace
-			} else {
-				// Insert
-				fs.FreeSpace = slices.Insert(fs.FreeSpace, i, newFreeSpace)
-			}
-			break
-		} else if fs.FreeSpace[i].Merge(newFreeSpace) {
-			break
+	idx, exists := slices.BinarySearchFunc(fs.FreeSpace, newFreeSpace.BlockId, func(f freeSpace, target int) int {
+		if f.BlockId > target {
+			return 1
+		} else if f.BlockId < target {
+			return -1
+		}
+		return 0
+	})
+	if exists {
+		fs.FreeSpace[idx].Size += newFreeSpace.Size
+	} else {
+		previousIdx := idx-1
+		if newFreeSpace.Merge(fs.FreeSpace[previousIdx]) {
+			fs.FreeSpace[previousIdx] = newFreeSpace
+		} else {
+			// Insert
+			fs.FreeSpace = slices.Insert(fs.FreeSpace, previousIdx, newFreeSpace)
 		}
 	}
 }
@@ -153,13 +158,6 @@ func (fs *filesystem) CompactWholeFiles() {
 }
 
 func main() {
-	f, _ := os.Create("out.pprof")
-	defer f.Close()
-	err := pprof.StartCPUProfile(f)
-	if err != nil {
-		panic(err)
-	}
-	defer pprof.StopCPUProfile()
 	inputFd, err := os.Open("inputs/09")
 	if err != nil {
 		panic(err)
