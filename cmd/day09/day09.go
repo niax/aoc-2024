@@ -9,14 +9,14 @@ import (
 )
 
 type file struct {
-	Id int
-	Size int
+	Id       int
+	Size     int
 	BlockIds []int
 }
 
 type freeSpace struct {
 	BlockId int
-	Size int
+	Size    int
 }
 
 func (f *freeSpace) Merge(other freeSpace) bool {
@@ -29,8 +29,8 @@ func (f *freeSpace) Merge(other freeSpace) bool {
 }
 
 type filesystem struct {
-	Files []file
-	Blocks []*file
+	Files     []file
+	Blocks    []*file
 	FreeSpace []freeSpace
 }
 
@@ -46,7 +46,7 @@ func (fs *filesystem) InsertFreespace(newFreeSpace freeSpace) {
 	if exists {
 		fs.FreeSpace[idx].Size += newFreeSpace.Size
 	} else {
-		previousIdx := idx-1
+		previousIdx := idx - 1
 		if newFreeSpace.Merge(fs.FreeSpace[previousIdx]) {
 			fs.FreeSpace[previousIdx] = newFreeSpace
 		} else {
@@ -58,11 +58,11 @@ func (fs *filesystem) InsertFreespace(newFreeSpace freeSpace) {
 
 func (fs *filesystem) AddFile(size int) {
 	fs.Files = append(fs.Files, file{
-		Id: len(fs.Files),
+		Id:       len(fs.Files),
 		BlockIds: make([]int, size),
-		Size: size,
+		Size:     size,
 	})
-	filePtr := &fs.Files[len(fs.Files) - 1]
+	filePtr := &fs.Files[len(fs.Files)-1]
 	for i := 0; i < size; i++ {
 		filePtr.BlockIds[i] = len(fs.Blocks)
 		fs.Blocks = append(fs.Blocks, filePtr)
@@ -72,7 +72,7 @@ func (fs *filesystem) AddFile(size int) {
 func (fs *filesystem) AddFreeSpace(size int) {
 	fs.FreeSpace = append(fs.FreeSpace, freeSpace{
 		BlockId: len(fs.Blocks),
-		Size: size,
+		Size:    size,
 	})
 	for i := 0; i < size; i++ {
 		fs.Blocks = append(fs.Blocks, nil)
@@ -152,7 +152,7 @@ func (fs *filesystem) CompactWholeFiles() {
 
 		fs.InsertFreespace(freeSpace{
 			BlockId: oldBlockStart,
-			Size: filePtr.Size,
+			Size:    filePtr.Size,
 		})
 	}
 }
@@ -167,13 +167,13 @@ func main() {
 	input := bufio.NewScanner(inputFd)
 
 	p1Fs := filesystem{
-		Files: make([]file, 0, 1024 * 1024),
-		Blocks: make([]*file, 0, 1024 * 1024),
+		Files:     make([]file, 0, 1024*1024),
+		Blocks:    make([]*file, 0, 1024*1024),
 		FreeSpace: make([]freeSpace, 0, 1024),
 	}
 	p2Fs := filesystem{
-		Files: make([]file, 0, 1024 * 1024),
-		Blocks: make([]*file, 0, 1024 * 1024),
+		Files:     make([]file, 0, 1024*1024),
+		Blocks:    make([]*file, 0, 1024*1024),
 		FreeSpace: make([]freeSpace, 0, 1024),
 	}
 
@@ -182,7 +182,7 @@ func main() {
 
 		freeSpace := false
 		for i := range line {
-			blockCount, _ := strconv.Atoi(line[i:i+1])
+			blockCount, _ := strconv.Atoi(line[i : i+1])
 
 			if freeSpace {
 				p1Fs.AddFreeSpace(blockCount)
