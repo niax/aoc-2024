@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	//"runtime/pprof"
 	"strconv"
 
 	"github.com/niax/aoc-2024/internal/collections"
@@ -12,33 +13,39 @@ import (
 type Grid = collections.SliceGrid[int]
 type Point = collections.Point2D
 
-type pointDistance struct {
-	p Point
-	d int
-}
-
 func pathCountToPoint(grid *Grid, startPoint Point) *collections.SliceGrid[int] {
 	reachable := collections.NewSliceGrid[int](grid.Width(), grid.Height())
 
-	frontier := make([]Point, 1, grid.Width())
-	frontier[0] = startPoint
+	type frontierElement struct {
+		idx collections.SliceGridIndex
+		p Point
+	}
+	frontier := make([]frontierElement, 1, grid.Width() * grid.Width())
+	frontier[0] = frontierElement {
+		idx: grid.IndexForPoint(startPoint),
+		p: startPoint,
+	}
 
 	for len(frontier) > 0 {
-		pd := frontier[0]
-		cur := reachable.AtPoint(pd)
-		reachable.Set(pd.X, pd.Y, *cur+1)
-		wantedHeight := *grid.AtPoint(pd) + 1
+		fe := frontier[0]
+		cur := reachable.AtIndex(fe.idx)
+		reachable.SetIndex(fe.idx, *cur+1)
+		wantedHeight := *grid.AtIndex(fe.idx) + 1
 		frontier = frontier[1:]
 
 		for _, dir := range collections.Point2D_CardinalDirections {
-			nextPoint := pd.Add(dir)
+			nextPoint := fe.p.Add(dir)
+			nextIdx := grid.IndexForPoint(nextPoint)
 			nextGridVal := grid.AtPoint(nextPoint)
 			if nextGridVal == nil {
 				continue
 			}
 
 			if *nextGridVal == wantedHeight {
-				frontier = append(frontier, nextPoint)
+				frontier = append(frontier, frontierElement{
+					idx: nextIdx,
+					p: nextPoint,
+				})
 			}
 		}
 	}
@@ -47,6 +54,26 @@ func pathCountToPoint(grid *Grid, startPoint Point) *collections.SliceGrid[int] 
 }
 
 func main() {
+	/*
+	f, err := os.Create("out.pprof")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	err = pprof.StartCPUProfile(f)
+	if err != nil {
+		panic(err)
+	}
+	defer pprof.StopCPUProfile()
+
+	for i := 0; i < 1000; i++ {
+	*/
+		x()
+	//}
+}
+func x() {
+
+
 	inputFd, err := os.Open("inputs/10")
 	if err != nil {
 		panic(err)
