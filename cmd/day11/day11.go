@@ -11,7 +11,7 @@ import (
 )
 
 func shittyLog10(i int) int {
-	return int(ilog10.FastUint64Log10(uint64(i)))
+	return int(ilog10.NumUint64DecimalDigits(uint64(i)))
 }
 
 var pow10Lookup = []int{
