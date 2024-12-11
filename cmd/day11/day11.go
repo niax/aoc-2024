@@ -6,42 +6,12 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/knz/go-ilog10"
 )
 
 func shittyLog10(i int) int {
-	if i >= 1000000000000000 {
-		panic(i)
-	} else if i >= 100000000000000 {
-		return 15
-	} else if i >= 10000000000000 {
-		return 14
-	} else if i >= 1000000000000 {
-		return 13
-	} else if i >= 100000000000 {
-		return 12
-	} else if i >= 10000000000 {
-		return 11
-	} else if i >= 1000000000 {
-		return 10
-	} else if i >= 100000000 {
-		return 9
-	} else if i >= 10000000 {
-		return 8
-	} else if i >= 1000000 {
-		return 7
-	} else if i >= 100000 {
-		return 6
-	} else if i >= 10000 {
-		return 5
-	} else if i >= 1000 {
-		return 4
-	} else if i >= 100 {
-		return 3
-	} else if i >= 10 {
-		return 2
-	} else {
-		return 1
-	}
+	return int(ilog10.FastUint64Log10(uint64(i)))
 }
 
 var pow10Lookup = []int{
