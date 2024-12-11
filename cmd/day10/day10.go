@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	//"runtime/pprof"
 	"strconv"
 
 	"github.com/niax/aoc-2024/internal/collections"
@@ -18,12 +17,12 @@ func pathCountToPoint(grid *Grid, startPoint Point) *collections.SliceGrid[int] 
 
 	type frontierElement struct {
 		idx collections.SliceGridIndex
-		p Point
+		p   Point
 	}
-	frontier := make([]frontierElement, 1, grid.Width() * grid.Width())
-	frontier[0] = frontierElement {
+	frontier := make([]frontierElement, 1, grid.Width()*grid.Width())
+	frontier[0] = frontierElement{
 		idx: grid.IndexForPoint(startPoint),
-		p: startPoint,
+		p:   startPoint,
 	}
 
 	for len(frontier) > 0 {
@@ -44,7 +43,7 @@ func pathCountToPoint(grid *Grid, startPoint Point) *collections.SliceGrid[int] 
 			if *nextGridVal == wantedHeight {
 				frontier = append(frontier, frontierElement{
 					idx: nextIdx,
-					p: nextPoint,
+					p:   nextPoint,
 				})
 			}
 		}
@@ -54,26 +53,6 @@ func pathCountToPoint(grid *Grid, startPoint Point) *collections.SliceGrid[int] 
 }
 
 func main() {
-	/*
-	f, err := os.Create("out.pprof")
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-	err = pprof.StartCPUProfile(f)
-	if err != nil {
-		panic(err)
-	}
-	defer pprof.StopCPUProfile()
-
-	for i := 0; i < 1000; i++ {
-	*/
-		x()
-	//}
-}
-func x() {
-
-
 	inputFd, err := os.Open("inputs/10")
 	if err != nil {
 		panic(err)
